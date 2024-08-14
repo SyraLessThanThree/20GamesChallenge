@@ -27,13 +27,14 @@ script = ExtResource("1_tsu5a")
 [node name="GameManager" type="Node" parent="." node_paths=PackedStringArray("player")]
 process_mode = 3
 script = ExtResource("5_d3y12")
+lifeCheat = true
 player = NodePath("../Player")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(576, 324)
 
 [node name="Spawner" type="Node2D" parent="." node_paths=PackedStringArray("player")]
-position = Vector2(1000, 0)
+position = Vector2(1152, 0)
 script = ExtResource("2_l5qmb")
 spawnTemplates = ExtResource("4_7regd")
 coin = ExtResource("5_anpxj")

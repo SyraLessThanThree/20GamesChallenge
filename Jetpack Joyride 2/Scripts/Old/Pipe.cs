@@ -74,8 +74,6 @@ public partial class Pipe : AnimatableBody2D
 			//player.Score(1);
 		}*/
 	}
-	
-	
 
 	public static Pipe SpawnPipe(Node2D movingNode, float holeSize_, float holePos_, Vector2? offset_ = null)
 	{

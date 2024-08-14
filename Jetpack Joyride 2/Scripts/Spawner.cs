@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class Spawner : Node2D
 {
@@ -20,9 +21,11 @@ public partial class Spawner : Node2D
 	[ExportCategory("Game Variables")]
 	[Export] protected float spawnInterval = 1.5f;
 	
+	[ExportCategory("Move Object Settings")]
+	[Export] public float speed = 150;
+	[Export] public float xDespawn = -30f;
 	[ExportCategory("Spawned Object Settings")]
 	[Export]public static float yMiddleOffset = 324f;
-	[Export] public float speed = 150;
 	//[Export] public float holePos = 648/2f;
 	[Export] public float holeSize = 200;
 	[Export] public Vector2 holePosVar = new Vector2(50, 648 - 50);
@@ -42,21 +45,37 @@ public partial class Spawner : Node2D
 		spawnTimer.Timeout += () => SpawnOnce();
 
 		SetupCoins();
+		SetupSpawn();
 	}
 
 	private List<Node2D> currMovingNodes = new List<Node2D>();
 
+
 	enum Spawn
 	{
 		Pipe,
-		//SawCol,
+		SawCol,
+		Saw,
+		Laser,
+	}
+	Dictionary<Spawn,int> spawnList = new Dictionary<Spawn,int>()
+	{
+		{Spawn.Pipe,1},
+		{Spawn.SawCol,0},
+		{Spawn.Saw,0},
+		{Spawn.Laser,0},
 	};
-	private Spawn[] spawnList = Enum.GetValues<Spawn>();
+
+	int maxChance = 0;
+	private void SetupSpawn()
+	{
+		spawnList.Values.ToList().ForEach(i => maxChance += i);
+	}
 
 	enum MNmetaNames{ Speed, }
 	
 	//DEBUG
-	private float MNexpirationTime = 3f;
+	private float MNexpirationTime = 20f;
 	public void SpawnOnce()
 	{
 		float holePosY = (float)GD.RandRange(holePosVar.X + holeSize / 2, holePosVar.Y - holeSize / 2);
@@ -76,7 +95,12 @@ public partial class Spawner : Node2D
 		movingNode.AddChild(expTimer);
 		expTimer.Start();
 
-		Spawn spawnedObjectType = spawnList[GD.RandRange(0,spawnList.Length-1)];
+		int roll = GD.RandRange(0, maxChance);
+		Spawn spawnedObjectType = spawnList.First((pair => {
+			roll -= pair.Value;
+			return roll <= 0;
+		})).Key;
+		GD.Print("Spawned: "+spawnedObjectType.ToString());
 		Node2D spawnedObjs;
 		//TODO: create moving obj
 		switch (spawnedObjectType)
@@ -147,9 +171,17 @@ public partial class Spawner : Node2D
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
+		List<Node2D> toRemove = new List<Node2D>();
 		foreach (var movingNode in currMovingNodes)
 		{
 			movingNode.Translate((float)delta * movingNode.GetMeta(MNmetaNames.Speed.ToString()).AsSingle() * new Vector2(-1,0));
+			if (movingNode.GlobalPosition.X <= xDespawn)
+			{
+				movingNode.QueueFree();
+				toRemove.Add(movingNode);
+			}
 		}
+		
+		toRemove.ForEach(((a) => currMovingNodes.Remove(a)));
 	}
 }

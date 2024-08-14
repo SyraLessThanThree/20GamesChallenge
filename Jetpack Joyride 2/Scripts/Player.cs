@@ -148,7 +148,7 @@ public partial class Player : CharacterBody2D
 	
 	private void OnPickupArea(Area2D collider)
 	{
-		GD.Print("PickedUp "+collider.Name);
+		//GD.Print("PickedUp "+collider.Name);
 		if ((bool)collider.GetMeta("player_coll_function", false))
 		{
 			collider.EmitSignal(Coin.SignalName.PlayerColl,this);
@@ -279,7 +279,10 @@ public partial class Player : CharacterBody2D
 		Tween tween = GetTree().CreateTween();
 		tween.TweenProperty(this, "rotation", -90f/360f*2*Mathf.Pi, 3f);
 		CollisionMask = 0;
-		GetTree().CreateTimer(5).Timeout += () => GetTree().ReloadCurrentScene();
+		GetTree().CreateTimer(5).Timeout += () =>
+		{
+			GameManager.Reload();
+		};
 		spawner.spawnTimer.Stop();
 		spawner.spawnTimer.Paused = true;
 

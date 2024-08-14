@@ -18,8 +18,10 @@ public partial class HurtComponent : Node
 		{
 			Area2D area = parent as Area2D;
 
-			componentManager.ConnectSignal(area,Area2D.SignalName.BodyEntered, () =>
+			componentManager.ConnectSignal(area,Area2D.SignalName.BodyEntered, (GodotObject body) =>
 			{
+				if(!(body is Player)) return;
+				if(GameManager.currState != GameManager.GameState.PLAYING) return;
 				GD.Print("SignalTriggered");
 				player.HurtHeal(amount);
 			});

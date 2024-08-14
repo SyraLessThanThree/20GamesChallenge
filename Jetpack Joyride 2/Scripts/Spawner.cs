@@ -20,6 +20,7 @@ public partial class Spawner : Node2D
 	
 	[ExportCategory("Game Variables")]
 	[Export] protected float spawnInterval = 1.5f;
+	[Export] public Rect2 screenBounds;
 	
 	[ExportCategory("Move Object Settings")]
 	[Export] public float speed = 150;
@@ -36,6 +37,8 @@ public partial class Spawner : Node2D
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		screenBounds = GetViewportRect();
+		
 		if(editorOnly != null) editorOnly.QueueFree();
 		
 		spawnTimer = new Timer();
@@ -44,7 +47,6 @@ public partial class Spawner : Node2D
 		spawnTimer.WaitTime = spawnInterval;
 		spawnTimer.Timeout += () => SpawnOnce();
 
-		SetupCoins();
 		SetupSpawn();
 	}
 
@@ -61,8 +63,8 @@ public partial class Spawner : Node2D
 	Dictionary<Spawn,int> spawnList = new Dictionary<Spawn,int>()
 	{
 		{Spawn.Pipe,1},
-		{Spawn.SawCol,0},
-		{Spawn.Saw,0},
+		{Spawn.SawCol,1},
+		{Spawn.Saw,4},
 		{Spawn.Laser,0},
 	};
 
@@ -70,21 +72,25 @@ public partial class Spawner : Node2D
 	private void SetupSpawn()
 	{
 		spawnList.Values.ToList().ForEach(i => maxChance += i);
+		
+		SetupCoins();
+		SetupSaws();
 	}
 
 	enum MNmetaNames{ Speed, }
+	float speedVariation = 0.15f;
+	float tempSpawnMult = 1f;
 	
 	//DEBUG
 	private float MNexpirationTime = 20f;
 	public void SpawnOnce()
 	{
-		float holePosY = (float)GD.RandRange(holePosVar.X + holeSize / 2, holePosVar.Y - holeSize / 2);
-
+		tempSpawnMult = 1f;
 		Node2D movingNode = new Node2D();
 		currMovingNodes.Add(movingNode);
 		AddChild(movingNode);
 		movingNode.GlobalPosition = GlobalPosition;
-		movingNode.SetMeta(MNmetaNames.Speed.ToString(),speed* (float)GD.RandRange(.5,1.5));
+		movingNode.SetMeta(MNmetaNames.Speed.ToString(),speed* (float)GD.RandRange(1-speedVariation,1+speedVariation));
 		Timer expTimer = new Timer();
 		expTimer.WaitTime = MNexpirationTime;
 		expTimer.Timeout += () =>
@@ -96,7 +102,9 @@ public partial class Spawner : Node2D
 		expTimer.Start();
 
 		int roll = GD.RandRange(0, maxChance);
-		Spawn spawnedObjectType = spawnList.First((pair => {
+		Spawn spawnedObjectType = spawnList.First((pair =>
+		{
+			if (pair.Value == 0) return false;
 			roll -= pair.Value;
 			return roll <= 0;
 		})).Key;
@@ -106,17 +114,47 @@ public partial class Spawner : Node2D
 		switch (spawnedObjectType)
 		{
 			case Spawn.Pipe:
-				spawnedObjs = Pipe.SpawnPipe(movingNode,holeSize,holePosY);
+				float pipeHolePosY = (float)GD.RandRange(holePosVar.X + holeSize / 2, holePosVar.Y - holeSize / 2);
+				spawnedObjs = Pipe.SpawnPipe(movingNode,holeSize,pipeHolePosY);
 				movingNode.Position += new Vector2(0, +yMiddleOffset);
-				SpawnCoinPile(spawnedObjs, new Vector2I(GD.RandRange(0,4), GD.RandRange(1,3)), new Vector2(0, holePosY-yMiddleOffset),new int[2]);
+				SpawnCoinPile(spawnedObjs, new Vector2I(GD.RandRange(0,4), GD.RandRange(1,3)), new Vector2(0, pipeHolePosY-yMiddleOffset),new int[2]);
 				break;
-			//case Spawn.SawCol:
-				spawnedObjs = null;
+			case Spawn.Saw:
+				float posY = (float)GD.RandRange(holePosVar.X, holePosVar.Y);
+				spawnedObjs = spawnSaw.Invoke(movingNode, new Vector2(0, posY));
+				tempSpawnMult = .2f;
+				break;
+			case Spawn.SawCol:
+				float sawColHolePosY = (float)GD.RandRange(holePosVar.X + holeSize / 2, holePosVar.Y - holeSize / 2);
+				spawnedObjs = SpawnSawCol(movingNode, holeSize, sawColHolePosY);
 				break;
 			default:
 				spawnedObjs = null;
 				break;
 		}
+
+		spawnTimer.Start(spawnInterval*tempSpawnMult);
+	}
+
+	private Node2D SpawnSawCol(Node2D parent, float holeSize_, float holeY)
+	{
+		float currY = holeY - holeSize_ / 2f;
+		while (currY >= screenBounds.Position.Y)//upper "pipe"
+		{
+			spawnSaw.Invoke(parent, new Vector2(0, currY));
+			currY -= sawSize.Y / 2;
+		}
+		spawnSaw.Invoke(parent, new Vector2(0, currY));
+		
+		currY = holeY + holeSize_ / 2f;
+		while (currY <= (screenBounds.Position.Y + screenBounds.Size.Y))//lower "pipe"
+		{
+			spawnSaw.Invoke(parent, new Vector2(0, currY));
+			currY += sawSize.Y / 2;
+		}
+		spawnSaw.Invoke(parent, new Vector2(0, currY));
+		
+		return parent;
 	}
 
 	public void StartSpawning()
@@ -144,8 +182,27 @@ public partial class Spawner : Node2D
 			coinSize = _.GetMeta("size", Vector2.Zero).AsVector2();
 			_.QueueFree();
 		}
-
-		coinSize.Y *= 3/4f;
+	}
+	Vector2 sawSize = new Vector2(-1,-1);
+	private Func<Node2D, Vector2, Node2D> spawnSaw;
+	public void SetupSaws()
+	{
+		if (spawnSaw == null)
+			spawnSaw = (movingNode, pos_) =>
+			{
+				Node2D o = sawsToSpawn.Instantiate<Node2D>();
+				movingNode.AddChild(o);
+				double randX = .2f;
+				randX = GD.RandRange(-sawSize.X * randX/2, sawSize.X * randX/2);
+				o.Position = pos_+new Vector2((float)randX,sawSize.Y*3/4f);
+				return o;
+			};
+		if (sawSize.X == -1 || sawSize.Y == -1)
+		{
+			var _ = spawnSaw.Invoke(this, Vector2.Zero);
+			sawSize = _.GetMeta("size", Vector2.Zero).AsVector2();
+			_.QueueFree();
+		}
 	}
 	
 	
@@ -153,16 +210,19 @@ public partial class Spawner : Node2D
 	{
 		if (amount.X <= 0 || amount.Y <= 0) return;
 
+		Vector2 coinSize_ = coinSize;
+		coinSize_.Y *= 3/4f;
+
 		for(int x = 0; x < amount.X; x++) for(int y = 0; y < amount.Y; y++)
 		{
 			//bool isFirst = x == 0;
 			//bool isLast = (x == (amount.X - 1)) && !isFirst;
 			
 			Vector2 localPos = pos;
-			localPos.Y += coinSize.Y * y - amount.Y * coinSize.Y/2;
-			localPos.X += coinSize.X * x;
+			localPos.Y += coinSize_.Y * y - amount.Y * coinSize_.Y/2;
+			localPos.X += coinSize_.X * x;
 			
-			if((yOffset.Length-1)>=x) localPos.Y += coinSize.Y/2 * yOffset[x];
+			if((yOffset.Length-1)>=x) localPos.Y += coinSize_.Y/2 * yOffset[x];
 			
 			spawnCoin.Invoke(movingNode, localPos);
 		}

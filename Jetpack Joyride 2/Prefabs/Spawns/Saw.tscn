@@ -36,6 +36,7 @@ animations = [{
 }]
 
 [node name="Saw" type="Node2D"]
+metadata/size = Vector2(60, 60)
 
 [node name="Area2D" type="Area2D" parent="."]
 
@@ -48,4 +49,5 @@ shape = SubResource("CircleShape2D_rmtmd")
 texture_filter = 1
 scale = Vector2(6, 6)
 sprite_frames = SubResource("SpriteFrames_38lqv")
-frame_progress = 0.495382
+autoplay = "default"
+frame_progress = 0.674701

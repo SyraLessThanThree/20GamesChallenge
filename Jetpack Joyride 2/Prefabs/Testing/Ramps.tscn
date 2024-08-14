@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://ckwwt0kamhvhe"]
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_vpw1w"]
+a = Vector2(-150, 0)
+b = Vector2(150, 300)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_xn3k2"]
+a = Vector2(-150, 0)
+b = Vector2(150, -300)
+
+[node name="Ramps" type="Node2D"]
+
+[node name="Ramp" type="AnimatableBody2D" parent="."]
+sync_to_physics = false
+metadata/push_player = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ramp"]
+shape = SubResource("SegmentShape2D_vpw1w")
+
+[node name="Ramp2" type="AnimatableBody2D" parent="."]
+position = Vector2(0, 648)
+sync_to_physics = false
+metadata/push_player = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ramp2"]
+shape = SubResource("SegmentShape2D_xn3k2")

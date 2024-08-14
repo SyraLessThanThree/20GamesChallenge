@@ -1,0 +1,109 @@
+[gd_scene load_steps=12 format=3 uid="uid://c13j7xdotpws"]
+
+[ext_resource type="Shader" path="res://CRT.gdshader" id="1_23rwv"]
+[ext_resource type="PackedScene" uid="uid://hymcycqre204" path="res://Prefabs/wall.tscn" id="1_78e3x"]
+[ext_resource type="Script" path="res://Scripts/RootNodeGame.cs" id="1_b2byj"]
+[ext_resource type="Script" path="res://Scripts/Scores.cs" id="2_1paom"]
+[ext_resource type="PackedScene" uid="uid://cvhgsolhj5rhp" path="res://Prefabs/ball.tscn" id="2_e8c5j"]
+[ext_resource type="PackedScene" uid="uid://dlsudj63nil0w" path="res://Prefabs/paddle.tscn" id="3_ngi37"]
+[ext_resource type="Script" path="res://Scripts/Player.cs" id="3_vccmc"]
+[ext_resource type="FontFile" uid="uid://c5lubnecob1vi" path="res://Kenney Mini.ttf" id="3_x4rkk"]
+[ext_resource type="Script" path="res://Scripts/NPC.cs" id="5_ydwy7"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_knvpa"]
+font = ExtResource("3_x4rkk")
+font_size = 156
+font_color = Color(1, 1, 1, 0.713726)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fdhim"]
+shader = ExtResource("1_23rwv")
+shader_parameter/overlay = true
+shader_parameter/scanlines_opacity = 0.4
+shader_parameter/scanlines_width = 0.25
+shader_parameter/grille_opacity = 0.3
+shader_parameter/resolution = Vector2(640, 480)
+shader_parameter/pixelate = true
+shader_parameter/roll = false
+shader_parameter/roll_speed = 7.52
+shader_parameter/roll_size = 0.0
+shader_parameter/roll_variation = 1.8
+shader_parameter/distort_intensity = 0.05
+shader_parameter/noise_opacity = 0.139
+shader_parameter/noise_speed = 5.0
+shader_parameter/static_noise_intensity = 0.06
+shader_parameter/aberration = -0.012
+shader_parameter/brightness = 1.4
+shader_parameter/discolor = true
+shader_parameter/warp_amount = 1.0
+shader_parameter/clip_warp = false
+shader_parameter/vignette_intensity = 0.735
+shader_parameter/vignette_opacity = 0.171
+
+[node name="RootNode" type="Node2D"]
+script = ExtResource("1_b2byj")
+
+[node name="Deco" type="Node2D" parent="." node_paths=PackedStringArray("Player", "NPC")]
+script = ExtResource("2_1paom")
+Player = NodePath("PlayerScore")
+NPC = NodePath("NPCScore")
+
+[node name="Line2D" type="Line2D" parent="Deco"]
+position = Vector2(575, 95)
+points = PackedVector2Array(0, 0, 0, 460)
+width = 5.96
+default_color = Color(1, 1, 1, 0.415686)
+
+[node name="PlayerScore" type="Label" parent="Deco"]
+offset_left = 180.0
+offset_top = 60.0
+offset_right = 580.0
+offset_bottom = 255.0
+text = "0"
+label_settings = SubResource("LabelSettings_knvpa")
+horizontal_alignment = 2
+text_direction = 2
+
+[node name="NPCScore" type="Label" parent="Deco"]
+offset_left = 590.0
+offset_top = 60.0
+offset_right = 982.0
+offset_bottom = 255.0
+text = "0"
+label_settings = SubResource("LabelSettings_knvpa")
+text_direction = 2
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Upper Wall" parent="Walls" instance=ExtResource("1_78e3x")]
+position = Vector2(50, 50)
+
+[node name="Lower Wall" parent="Walls" instance=ExtResource("1_78e3x")]
+position = Vector2(50, 600)
+
+[node name="Ball" parent="." node_paths=PackedStringArray("scores") instance=ExtResource("2_e8c5j")]
+position = Vector2(80, 325)
+scores = NodePath("../Deco")
+
+[node name="Player" type="Node2D" parent="."]
+position = Vector2(55, 100)
+script = ExtResource("3_vccmc")
+
+[node name="Paddle" parent="Player" instance=ExtResource("3_ngi37")]
+speed = 20.0
+
+[node name="NPC" type="Node2D" parent="." node_paths=PackedStringArray("ball")]
+position = Vector2(1095, 100)
+script = ExtResource("5_ydwy7")
+ball = NodePath("../Ball")
+
+[node name="Paddle" parent="NPC" instance=ExtResource("3_ngi37")]
+speed = 2.0
+
+[node name="ColorRect" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_fdhim")
+offset_right = 1150.0
+offset_bottom = 650.0
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(576, 324)

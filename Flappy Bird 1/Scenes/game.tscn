@@ -1,0 +1,75 @@
+[gd_scene load_steps=8 format=3 uid="uid://ceiinn4rwema3"]
+
+[ext_resource type="Script" path="res://Scripts/PipesSpawner.cs" id="1_82x8p"]
+[ext_resource type="PackedScene" uid="uid://bf5fvhnp541tj" path="res://Prefabs/Player.tscn" id="1_lcdod"]
+[ext_resource type="PackedScene" uid="uid://dc4jakwllgq0w" path="res://Prefabs/Pipe.tscn" id="2_jpqm1"]
+[ext_resource type="FontFile" uid="uid://bkl6j55q22uuk" path="res://Kenney Blocks.ttf" id="3_n6jfg"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_kt41w"]
+normal = Vector2(0, 1)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_wqsyo"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_y7drq"]
+font = ExtResource("3_n6jfg")
+font_size = 80
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(576, 324)
+
+[node name="Pipes Spawner" type="Node2D" parent="." node_paths=PackedStringArray("editorOnly", "player")]
+position = Vector2(1227, 0)
+script = ExtResource("1_82x8p")
+editorOnly = NodePath("Pipe")
+pipeToSpawn = ExtResource("2_jpqm1")
+player = NodePath("../Player")
+spawnInterval = 2.5
+
+[node name="Pipe" parent="Pipes Spawner" instance=ExtResource("2_jpqm1")]
+holePos = 260.055
+holeSize = 90.0
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Roof" type="ColorRect" parent="Walls"]
+offset_right = 1152.0
+offset_bottom = 40.0
+color = Color(0.43134, 0.43134, 0.43134, 1)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Walls/Roof"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Roof/StaticBody2D"]
+position = Vector2(576, 40)
+shape = SubResource("WorldBoundaryShape2D_kt41w")
+
+[node name="Floor" type="ColorRect" parent="Walls"]
+offset_top = 608.0
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0, 0.577795, 5.77569e-07, 1)
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="Walls/Floor"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Floor/StaticBody2D2"]
+position = Vector2(576, 0)
+shape = SubResource("WorldBoundaryShape2D_wqsyo")
+
+[node name="Player" parent="." node_paths=PackedStringArray("pipes", "scoreLabel") instance=ExtResource("1_lcdod")]
+position = Vector2(150, 324)
+pipes = NodePath("../Pipes Spawner")
+scoreLabel = NodePath("../Label")
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 366.0
+offset_top = 100.0
+offset_right = 786.0
+offset_bottom = 220.0
+grow_horizontal = 2
+text = "0"
+label_settings = SubResource("LabelSettings_y7drq")
+horizontal_alignment = 1

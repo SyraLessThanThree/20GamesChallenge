@@ -1,0 +1,155 @@
+using Godot;
+using System;
+using System.Collections.Generic;
+
+public partial class Spawner : Node2D
+{
+	[ExportCategory("Runtime Settings")]
+	[Export] private bool Disable = false;
+	[Export] public bool isSpawning = false;
+	[ExportCategory("Prefabs")]
+	[Export] private PackedScene spawnTemplates;
+	[Export] private PackedScene coin;
+	[Export] private PackedScene pipeToSpawn;
+	[Export] private PackedScene sawsToSpawn;
+
+	[ExportCategory("Objects")]
+	[Export] private Node editorOnly;
+	[Export] private Player player;
+	
+	[ExportCategory("Game Variables")]
+	[Export] protected float spawnInterval = 1.5f;
+	
+	[ExportCategory("Spawned Object Settings")]
+	[Export]public static float yMiddleOffset = 324f;
+	[Export] public float speed = 150;
+	//[Export] public float holePos = 648/2f;
+	[Export] public float holeSize = 200;
+	[Export] public Vector2 holePosVar = new Vector2(50, 648 - 50);
+
+
+	public Timer spawnTimer;
+	
+	// Called when the node enters the scene tree for the first time.
+	public override void _Ready()
+	{
+		if(editorOnly != null) editorOnly.QueueFree();
+		
+		spawnTimer = new Timer();
+		AddChild(spawnTimer);
+		spawnTimer.Stop();
+		spawnTimer.WaitTime = spawnInterval;
+		spawnTimer.Timeout += () => SpawnOnce();
+
+		SetupCoins();
+	}
+
+	private List<Node2D> currMovingNodes = new List<Node2D>();
+
+	enum Spawn
+	{
+		Pipe,
+		//SawCol,
+	};
+	private Spawn[] spawnList = Enum.GetValues<Spawn>();
+
+	enum MNmetaNames{ Speed, }
+	
+	//DEBUG
+	private float MNexpirationTime = 3f;
+	public void SpawnOnce()
+	{
+		float holePosY = (float)GD.RandRange(holePosVar.X + holeSize / 2, holePosVar.Y - holeSize / 2);
+
+		Node2D movingNode = new Node2D();
+		currMovingNodes.Add(movingNode);
+		AddChild(movingNode);
+		movingNode.GlobalPosition = GlobalPosition;
+		movingNode.SetMeta(MNmetaNames.Speed.ToString(),speed* (float)GD.RandRange(.5,1.5));
+		Timer expTimer = new Timer();
+		expTimer.WaitTime = MNexpirationTime;
+		expTimer.Timeout += () =>
+		{
+			currMovingNodes.Remove(movingNode);
+			movingNode.QueueFree();
+		};
+		movingNode.AddChild(expTimer);
+		expTimer.Start();
+
+		Spawn spawnedObjectType = spawnList[GD.RandRange(0,spawnList.Length-1)];
+		Node2D spawnedObjs;
+		//TODO: create moving obj
+		switch (spawnedObjectType)
+		{
+			case Spawn.Pipe:
+				spawnedObjs = Pipe.SpawnPipe(movingNode,holeSize,holePosY);
+				movingNode.Position += new Vector2(0, +yMiddleOffset);
+				SpawnCoinPile(spawnedObjs, new Vector2I(GD.RandRange(0,4), GD.RandRange(1,3)), new Vector2(0, holePosY-yMiddleOffset),new int[2]);
+				break;
+			//case Spawn.SawCol:
+				spawnedObjs = null;
+				break;
+			default:
+				spawnedObjs = null;
+				break;
+		}
+	}
+
+	public void StartSpawning()
+	{
+		isSpawning = true;
+		spawnTimer.Start();
+		SpawnOnce();
+	}
+
+	Vector2 coinSize = new Vector2(-1,-1);
+	private Func<Node2D, Vector2, Coin> spawnCoin;
+	public void SetupCoins()
+	{
+		if (spawnCoin == null)
+			spawnCoin = (movingNode, pos_) =>
+			{
+				Coin o = coin.Instantiate<Coin>();
+				movingNode.AddChild(o);
+				o.Position = pos_+new Vector2(0,coinSize.Y/2f);
+				return o;
+			};
+		if (coinSize.X == -1 || coinSize.Y == -1)
+		{
+			var _ = spawnCoin.Invoke(this, Vector2.Zero);
+			coinSize = _.GetMeta("size", Vector2.Zero).AsVector2();
+			_.QueueFree();
+		}
+
+		coinSize.Y *= 3/4f;
+	}
+	
+	
+	public void SpawnCoinPile(Node2D movingNode, Vector2I amount, Vector2 pos,int[] yOffset)
+	{
+		if (amount.X <= 0 || amount.Y <= 0) return;
+
+		for(int x = 0; x < amount.X; x++) for(int y = 0; y < amount.Y; y++)
+		{
+			//bool isFirst = x == 0;
+			//bool isLast = (x == (amount.X - 1)) && !isFirst;
+			
+			Vector2 localPos = pos;
+			localPos.Y += coinSize.Y * y - amount.Y * coinSize.Y/2;
+			localPos.X += coinSize.X * x;
+			
+			if((yOffset.Length-1)>=x) localPos.Y += coinSize.Y/2 * yOffset[x];
+			
+			spawnCoin.Invoke(movingNode, localPos);
+		}
+	}
+
+	// Called every frame. 'delta' is the elapsed time since the previous frame.
+	public override void _Process(double delta)
+	{
+		foreach (var movingNode in currMovingNodes)
+		{
+			movingNode.Translate((float)delta * movingNode.GetMeta(MNmetaNames.Speed.ToString()).AsSingle() * new Vector2(-1,0));
+		}
+	}
+}

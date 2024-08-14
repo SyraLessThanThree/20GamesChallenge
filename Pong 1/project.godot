@@ -1,0 +1,30 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Pong 1"
+run/main_scene="res://Scenes/game.tscn"
+config/features=PackedStringArray("4.2", "C#", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/resizable=false
+window/stretch/mode="viewport"
+
+[dotnet]
+
+project/assembly_name="Pong"
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.0699079, 0.0917641, 0.0699108, 1)

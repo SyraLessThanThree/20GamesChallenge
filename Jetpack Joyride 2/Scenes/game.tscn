@@ -1,0 +1,95 @@
+[gd_scene load_steps=13 format=3 uid="uid://ceiinn4rwema3"]
+
+[ext_resource type="PackedScene" uid="uid://bf5fvhnp541tj" path="res://Prefabs/Player.tscn" id="1_lcdod"]
+[ext_resource type="Script" path="res://Scripts/ComponentManager.cs" id="1_tsu5a"]
+[ext_resource type="PackedScene" uid="uid://dc4jakwllgq0w" path="res://Prefabs/Spawns/Pipe.tscn" id="2_jpqm1"]
+[ext_resource type="Script" path="res://Scripts/Spawner.cs" id="2_l5qmb"]
+[ext_resource type="FontFile" uid="uid://bkl6j55q22uuk" path="res://Kenney Blocks.ttf" id="3_n6jfg"]
+[ext_resource type="PackedScene" uid="uid://bkr47q1ynobbu" path="res://Prefabs/Templates/SpawnTemplates.tscn" id="4_7regd"]
+[ext_resource type="PackedScene" uid="uid://b56kgo1uurey" path="res://Prefabs/Spawns/Coin.tscn" id="5_anpxj"]
+[ext_resource type="Script" path="res://Scripts/GameManager.cs" id="5_d3y12"]
+[ext_resource type="PackedScene" uid="uid://okej8eicdplt" path="res://Prefabs/Spawns/Saw.tscn" id="7_sgxha"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_kt41w"]
+normal = Vector2(0, 1)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_wqsyo"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_y7drq"]
+font = ExtResource("3_n6jfg")
+font_size = 80
+
+[node name="World" type="Node2D"]
+
+[node name="ComponentManager" type="Node" parent="."]
+script = ExtResource("1_tsu5a")
+
+[node name="GameManager" type="Node" parent="." node_paths=PackedStringArray("player")]
+process_mode = 3
+script = ExtResource("5_d3y12")
+player = NodePath("../Player")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(576, 324)
+
+[node name="Spawner" type="Node2D" parent="." node_paths=PackedStringArray("player")]
+position = Vector2(1000, 0)
+script = ExtResource("2_l5qmb")
+spawnTemplates = ExtResource("4_7regd")
+coin = ExtResource("5_anpxj")
+pipeToSpawn = ExtResource("2_jpqm1")
+sawsToSpawn = ExtResource("7_sgxha")
+player = NodePath("../Player")
+spawnInterval = 0.9
+speed = 500.0
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Walls"]
+metadata/push_player = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/StaticBody2D"]
+position = Vector2(576, 40)
+shape = SubResource("WorldBoundaryShape2D_kt41w")
+
+[node name="Roof" type="ColorRect" parent="Walls/StaticBody2D"]
+offset_right = 1152.0
+offset_bottom = 40.0
+color = Color(0.43134, 0.43134, 0.43134, 1)
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="Walls"]
+position = Vector2(0, 608)
+metadata/push_player = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/StaticBody2D2"]
+position = Vector2(576, 0)
+shape = SubResource("WorldBoundaryShape2D_wqsyo")
+
+[node name="Floor" type="ColorRect" parent="Walls/StaticBody2D2"]
+offset_right = 1152.0
+offset_bottom = 40.0
+color = Color(0, 0.577795, 5.77569e-07, 1)
+
+[node name="Player" parent="." node_paths=PackedStringArray("camera", "spawner", "scoreLabel", "bulletParent") instance=ExtResource("1_lcdod")]
+position = Vector2(200, 324)
+camera = NodePath("../Camera2D")
+spawner = NodePath("../Spawner")
+scoreLabel = NodePath("../Label")
+bulletParent = NodePath("../Bullets")
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 366.0
+offset_top = 100.0
+offset_right = 786.0
+offset_bottom = 220.0
+grow_horizontal = 2
+text = "0"
+label_settings = SubResource("LabelSettings_y7drq")
+horizontal_alignment = 1
+
+[node name="Bullets" type="Node2D" parent="."]
+
+[node name="Testing" type="Node2D" parent="."]

@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://hymcycqre204"]
+
+[ext_resource type="Script" path="res://Scripts/Wall.cs" id="1_1luag"]
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_oxb5k"]
+resource_local_to_scene = true
+
+[node name="Upper Wall" type="Line2D"]
+points = PackedVector2Array(0, 0, 1050, 0)
+script = ExtResource("1_1luag")
+
+[node name="Body" type="StaticBody2D" parent="."]
+
+[node name="Coll" type="CollisionShape2D" parent="Body"]
+shape = SubResource("SegmentShape2D_oxb5k")

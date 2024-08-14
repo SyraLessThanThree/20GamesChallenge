@@ -1,0 +1,51 @@
+[gd_scene load_steps=8 format=3 uid="uid://okej8eicdplt"]
+
+[ext_resource type="PackedScene" uid="uid://0y8xmtcr707p" path="res://Prefabs/Components/HurtComponent.tscn" id="1_8wdqo"]
+[ext_resource type="Texture2D" uid="uid://caeocgp1bwopj" path="res://Sprites/SawBlade-Sheet.png" id="2_40ai1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rmtmd"]
+radius = 30.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7c8mf"]
+atlas = ExtResource("2_40ai1")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d5pdx"]
+atlas = ExtResource("2_40ai1")
+region = Rect2(18, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0m3wi"]
+atlas = ExtResource("2_40ai1")
+region = Rect2(36, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_38lqv"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7c8mf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d5pdx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0m3wi")
+}],
+"loop": true,
+"name": &"default",
+"speed": 10.0
+}]
+
+[node name="Saw" type="Node2D"]
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="HurtComponent" parent="Area2D" instance=ExtResource("1_8wdqo")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_rmtmd")
+
+[node name="Sprite2D" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+scale = Vector2(6, 6)
+sprite_frames = SubResource("SpriteFrames_38lqv")
+frame_progress = 0.495382

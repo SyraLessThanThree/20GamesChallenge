@@ -1,0 +1,80 @@
+[gd_scene load_steps=12 format=3 uid="uid://7g70adqu5p7t"]
+
+[ext_resource type="Script" path="res://Scripts/Laser.cs" id="1_38tqi"]
+[ext_resource type="Shader" path="res://Shaders/Laser.gdshader" id="2_3jgq0"]
+[ext_resource type="Texture2D" uid="uid://ordibuff6jb6" path="res://Sprites/Laser_Sheet.png" id="3_e6m4o"]
+[ext_resource type="Texture2D" uid="uid://giwsbvpvh2cu" path="res://Sprites/Laser_Emitter.png" id="4_ktf35"]
+[ext_resource type="PackedScene" uid="uid://0y8xmtcr707p" path="res://Prefabs/Components/HurtComponent.tscn" id="5_s5686"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jelv7"]
+shader = ExtResource("2_3jgq0")
+shader_parameter/alphaRange = Vector2(0.55, 0.8)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_43jf5"]
+atlas = ExtResource("4_ktf35")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_58o7u"]
+atlas = ExtResource("4_ktf35")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7uxkf"]
+atlas = ExtResource("4_ktf35")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_4m1r7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_43jf5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_58o7u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7uxkf")
+}],
+"loop": true,
+"name": &"default",
+"speed": 10.0
+}]
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_ekf5n"]
+b = Vector2(0, 0)
+
+[node name="Laser" type="Node2D" node_paths=PackedStringArray("line", "shape")]
+script = ExtResource("1_38tqi")
+line = NodePath("Line2D")
+shape = NodePath("Area2D/CollisionShape2D")
+
+[node name="Line2D" type="Line2D" parent="."]
+texture_filter = 1
+material = SubResource("ShaderMaterial_jelv7")
+points = PackedVector2Array(-200, 0, 200, 0)
+width = 25.0
+texture = ExtResource("3_e6m4o")
+texture_mode = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(-200, 0)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_4m1r7")
+autoplay = "default"
+frame_progress = 0.724549
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(200, 0)
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_4m1r7")
+autoplay = "default"
+frame_progress = 0.869137
+flip_h = true
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("SegmentShape2D_ekf5n")
+
+[node name="HurtComponent" parent="Area2D" instance=ExtResource("5_s5686")]

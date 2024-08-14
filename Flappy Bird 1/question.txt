@@ -1,0 +1,29 @@
+i have a pretty weird behaviour
+
+i expect to just collide with the AnimatebleBody not be dragged by it
+
+the CharacterBody2D Velocity is only up-down so the X is always 0
+
+the AnimatableBody2D moves to the left
+but when i try to move_and_collide the AnimatebleBody its weird and 100% doesnt work
+
+```
+_PhysicsProcess_Pipe(double delta)
+  var motion = new Vector2(-speed * (float)delta, 0);
+  //var coll = MoveAndCollide(motion);
+  Position += motion;
+
+_PhysicsProcess_Player(double delta)
+  var coll = MoveAndCollide(Velocity * (float)delta);
+  /*if (Node.IsInstanceValid(coll)) //we collided
+  {
+    Die();
+  }*/
+
+  if (Node.IsInstanceValid(coll) || TestMove(Transform,new Vector2(1,0))) //we collided or have a pipe next to us
+  {
+    Die();
+  }
+```
+
+i kinda dont wanna check for a pipe to my right cause it feels janky to do that

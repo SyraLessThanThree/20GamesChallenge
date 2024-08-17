@@ -219,10 +219,9 @@ texture_filter = 1
 position = Vector2(17, -6)
 scale = Vector2(3, 3)
 sprite_frames = SubResource("SpriteFrames_5etj0")
-animation = &"hurt"
+animation = &"idle"
 autoplay = "default"
-frame = 2
-frame_progress = 0.658506
+frame_progress = 0.605278
 
 [node name="Jetpack" type="AnimatedSprite2D" parent="."]
 texture_filter = 1

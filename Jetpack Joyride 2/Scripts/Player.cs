@@ -14,7 +14,7 @@ public partial class Player : CharacterBody2D
 	
 	//public Vector2 Velocity = Vector2.Zero;
 
-	public int score = 0;
+	public uint score = 0;
 	public float time = 0f;
 	public int health = 3;
 
@@ -23,6 +23,10 @@ public partial class Player : CharacterBody2D
 
 	[Export]private Spawner spawner;
 	[Export]private Label scoreLabel;
+	[Export]private Label highScoreLabel;
+	[Export] private String highScoreFormat = "High Score:\n";
+	public uint currHighScore = 0;
+	
 	[ExportCategory("Bullets")]
 	[Export]private PackedScene bulletToSpawn;
 	[Export]private Node2D bulletParent;
@@ -44,6 +48,10 @@ public partial class Player : CharacterBody2D
 
 	public override void _Ready()
 	{
+		GameManager.CheckSavegame();
+		currHighScore = GameManager.LoadHighScore();
+		UpdateHighScoreLabel();
+		
 		X = Position.X;
 		bulletSpawnPoint = GetNode<Node2D>("SpawnBullets");
 		bulletSpawnTimer = bulletSpawnPoint.GetNode<Timer>("Timer");
@@ -281,6 +289,7 @@ public partial class Player : CharacterBody2D
 		CollisionMask = 0;
 		GetTree().CreateTimer(5).Timeout += () =>
 		{
+			GameManager.SaveHighScore(Math.Max(currHighScore,score));
 			GameManager.Reload();
 		};
 		spawner.spawnTimer.Stop();
@@ -291,14 +300,19 @@ public partial class Player : CharacterBody2D
 
 	public void UpdateScore()
 	{
-		score += Mathf.FloorToInt(time*scoreInterval);
+		score += (uint)Mathf.FloorToInt(time*scoreInterval);
 		time = time % (1/scoreInterval);
 		UpdateScoreLabel();
+		if (score > currHighScore)
+		{
+			currHighScore = score;
+			UpdateHighScoreLabel();
+		}
 	}
 
-	public int ScorePoints(int add)
+	public uint ScorePoints(int add)
 	{
-		score += add;
+		score = (uint)Math.Max(0,score+add);
 		UpdateScoreLabel();
 		return score;
 	}
@@ -306,5 +320,10 @@ public partial class Player : CharacterBody2D
 	public void UpdateScoreLabel()
 	{
 		scoreLabel.Text = score.ToString();
+	}
+
+	public void UpdateHighScoreLabel()
+	{
+		highScoreLabel.Text = highScoreFormat+currHighScore.ToString();
 	}
 }

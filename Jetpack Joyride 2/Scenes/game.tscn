@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://ceiinn4rwema3"]
+[gd_scene load_steps=14 format=3 uid="uid://ceiinn4rwema3"]
 
 [ext_resource type="PackedScene" uid="uid://bf5fvhnp541tj" path="res://Prefabs/Player.tscn" id="1_lcdod"]
 [ext_resource type="Script" path="res://Scripts/ComponentManager.cs" id="1_tsu5a"]
@@ -18,6 +18,10 @@ normal = Vector2(0, 1)
 [sub_resource type="LabelSettings" id="LabelSettings_y7drq"]
 font = ExtResource("3_n6jfg")
 font_size = 80
+
+[sub_resource type="LabelSettings" id="LabelSettings_2cv62"]
+font = ExtResource("3_n6jfg")
+font_size = 30
 
 [node name="World" type="Node2D"]
 
@@ -70,11 +74,12 @@ offset_right = 1152.0
 offset_bottom = 40.0
 color = Color(0, 0.577795, 5.77569e-07, 1)
 
-[node name="Player" parent="." node_paths=PackedStringArray("camera", "spawner", "scoreLabel", "bulletParent") instance=ExtResource("1_lcdod")]
+[node name="Player" parent="." node_paths=PackedStringArray("camera", "spawner", "scoreLabel", "highScoreLabel", "bulletParent") instance=ExtResource("1_lcdod")]
 position = Vector2(200, 324)
 camera = NodePath("../Camera2D")
 spawner = NodePath("../Spawner")
 scoreLabel = NodePath("../Label")
+highScoreLabel = NodePath("../Label/highScoreLabel")
 bulletParent = NodePath("../Bullets")
 
 [node name="Label" type="Label" parent="."]
@@ -88,6 +93,21 @@ offset_bottom = 220.0
 grow_horizontal = 2
 text = "0"
 label_settings = SubResource("LabelSettings_y7drq")
+horizontal_alignment = 1
+
+[node name="highScoreLabel" type="Label" parent="Label"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -210.0
+offset_top = 100.0
+offset_right = 210.0
+offset_bottom = 220.0
+grow_horizontal = 2
+text = "High Score:
+X"
+label_settings = SubResource("LabelSettings_2cv62")
 horizontal_alignment = 1
 
 [node name="Bullets" type="Node2D" parent="."]
